@@ -47,8 +47,22 @@ Per million tokens ([xAI's published rates](https://docs.x.ai/docs/models)):
 pi reports spend with these automatically. Note the long-context rate applies to the **whole
 request** once the prompt crosses 200K, output included — not just the excess.
 
-Roughly, against Claude Sonnet 5 ($2 / $10, cache read $0.20, no long-context premium): Grok is
-~40% cheaper on output at short context, and pricier above 200K or on cache-heavy agent loops.
+Roughly, against Claude Sonnet 5 ($2 / $10, cache read $0.20, no long-context premium), comparing
+uncached input and output only: Grok is ~40% cheaper on output at short context, and pricier above
+200K. Claude on Vertex does get cache reads; per [Prompt caching](#prompt-caching) below, Grok on
+Vertex does not, so it should not be budgeted as if it did.
+
+## Prompt caching
+
+Prompt caching is **not supported** for Grok 4.6 on Vertex AI: it is a preview offering there, and
+Google Cloud support confirmed directly that caching is not supported for it (2026-09-14). A
+request may occasionally come back with a non-zero `cached_tokens` — pi surfaces that as `cacheRead`
+and prices it at the cached rate — but this is incidental, not a feature: it cannot be relied on or
+influenced. On xAI's own API, requests carry affinity keys (such as the `x-grok-conv-id` header and
+the `prompt_cache_key` parameter) that steer repeated prompts toward the same cache
+([How prompt caching works](https://docs.x.ai/developers/advanced-api-usage/prompt-caching/how-it-works));
+neither one has any effect on Vertex. Budget every request — and every turn of an agent loop — at
+full input price.
 
 ## Using alongside other Vertex providers
 
